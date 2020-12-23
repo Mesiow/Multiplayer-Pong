@@ -15,11 +15,10 @@ int main() {
 	}
 	else if (choice == '2') {
 		Game multi_pong;
-		if (multi_pong.Construct(256, 240, 4, 4, false, true))
+		if (multi_pong.Construct(SCREEN_WIDTH, SCREEN_HEIGHT, 4, 4, false, true))
 			multi_pong.Start();
 	}
 
-	
 
 	return 0;
 }
