@@ -3,28 +3,36 @@
 
 Client::Client()
 {
-	address_ = sf::IpAddress("127.0.0.1");
+	address_ = sf::IpAddress::LocalHost;
 	port_ = 5400;
 
 	remoteAddress_ = sf::IpAddress::LocalHost;
 	remotePort_ = 7777;
-
-	if (socket_.bind(port_, address_) != sf::Socket::Done) {
-		std::cerr << "Client socket failed to create\n";
+	if (socket_.bind(sf::Socket::AnyPort, address_) != sf::Socket::Done) {
+		log_error("Client socket failed to create");
 		return;
 	}
 	else {
-		std::cout << "Client setup successfully\n";
-
-		//send test packet to server
-		sf::Packet p;
-		p << CommandToServer::Connect;
-		socket_.send(p, remoteAddress_, remotePort_);
+		clog("Client setup successfully");
+		connectToServer();
 	}
+}
+
+Client::~Client()
+{
+	disconnectFromServer();
 }
 
 void Client::run()
 {
+	while (true) {
+		//handle input
+
+		//receive packets
+		receivePackets();
+
+		//render
+	}
 }
 
 void Client::receivePackets()
@@ -35,10 +43,65 @@ void Client::receivePackets()
 	if(socket_.receive(packet, sender, port) == sf::Socket::Done){
 		std::cout << "Packet of size " << packet.getDataSize() << " received from "
 			<< sender << " on port " << port << std::endl;
+
+		handlePacketReceive(packet);
 	}
 }
 
 void Client::sendPacket(sf::Packet& packet)
 {
+	socket_.send(packet, remoteAddress_, remotePort_);
+}
 
+void Client::handlePacketReceive(sf::Packet& packet)
+{
+	CommandToClient command;
+	packet >> command;
+	switch (command) {
+		case CommandToClient::BallState: {
+
+		}break;
+
+		case CommandToClient::PaddleState: {
+
+		}break;
+	}
+}
+
+void Client::connectToServer()
+{
+	//Send Connection packet to server
+	sf::Packet packet;
+	packet << (uint8_t)CommandToServer::Connect;
+	sendPacket(packet);
+
+
+	//Receive connection result from the server
+	sf::Packet recv_packet;
+	sf::IpAddress address;
+	uint16_t port;
+
+	if (socket_.receive(recv_packet, address, port) == sf::Socket::Done) {
+		CommandToClient command;
+		uint8_t result;
+		recv_packet >> command >> result;
+
+		//if result is 1(true), connection allowed
+		if (result) {
+			connected_ = true;
+			//setup peer objects/sprites
+			std::cout << "Connection request accepted\n";
+
+			socket_.setBlocking(false);
+		}
+	}
+}
+
+void Client::disconnectFromServer()
+{
+	sf::Packet disconnect;
+	disconnect << (uint8_t)CommandToServer::Disconnect;
+	sendPacket(disconnect);
+
+	socket_.unbind();
 }
