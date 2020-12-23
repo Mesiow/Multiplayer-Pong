@@ -18,6 +18,11 @@ public:
 		return true;
 	}
 
+	bool OnUserDestroy()override {
+		delete client_;
+		return true;
+	}
+
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		
