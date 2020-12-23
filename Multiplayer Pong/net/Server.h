@@ -9,6 +9,11 @@ struct ClientEndPoint {
 	uint16_t port;
 };
 
+struct BallState {
+	float velX, velY;
+	float posX, posY;
+};
+
 class Server : Net{
 public:
 	Server();
@@ -18,14 +23,20 @@ public:
 
 private:
 	void receivePackets()override;
-	void sendPacket(sf::Packet& packet)override;
-	void handleConnection(sf::IpAddress &address, uint16_t port);
+	void updateState();
+	void sendState();
 
-	int8_t emptySlot();
+	void sendPacket(sf::Packet& packet, ClientEndPoint client);
+	void handleConnection(sf::IpAddress &address, uint16_t port);
+	void handleDisconnection(sf::IpAddress& address, uint16_t port);
+
+	int emptySlot();
 
 
 private:
 	std::array<ClientEndPoint, MAX_CONNECTIONS> clients_;
 	std::array<bool, MAX_CONNECTIONS> connects_;
 	bool running_ = false;
+
+	BallState bstate_;
 };
