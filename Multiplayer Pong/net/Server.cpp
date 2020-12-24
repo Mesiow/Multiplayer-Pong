@@ -51,7 +51,7 @@ void Server::receivePackets()
 	sf::IpAddress address;
 	uint16_t port;
 
-	if (socket_.receive(packet, address, port) == sf::Socket::Done) {
+	while(socket_.receive(packet, address, port) == sf::Socket::Done) {
 		CommandToServer command;
 		packet >> command;
 
@@ -89,6 +89,17 @@ void Server::updateState()
 
 void Server::sendState()
 {
+	//Send paddle data
+	sf::Packet paddlePacket;
+	paddlePacket << (uint8_t)CommandToClient::PaddleState;
+	for (int i = 0; i < MAX_CONNECTIONS; i++) {
+		if (connects_[i]) {
+			auto& clientState = paddleStates_[i];
+			//send client slot id and client position
+			paddlePacket << (uint8_t)i << clientState.posX << clientState.posY;
+		}
+	}
+
 
 	//Send ball data to clients
 	sf::Packet ballPacket;
@@ -96,9 +107,10 @@ void Server::sendState()
 
 	for (int i = 0; i < MAX_CONNECTIONS; i++) {
 		if (connects_[i]) {
-			ballPacket << (uint8_t)i; //client slot
-			auto clientEndPoint = clients_[i];
+			auto &clientEndPoint = clients_[i];
+			sendPacket(paddlePacket, clientEndPoint);
 			sendPacket(ballPacket, clientEndPoint);
+			
 		}
 	}
 }
@@ -116,25 +128,35 @@ void Server::handleConnection(sf::IpAddress& address, uint16_t port)
 	newClient.port = port;
 
 	int slot = emptySlot();
-	if (slot == -1) {
-		log_error("No Slots left for new Client");
-		return;
-	}
-	std::cout << "slot: " << slot << "\n";
+	
+	std::cout << "slot: " << (int)slot << "\n";
 	clients_[slot] = newClient;
 
 	sf::Packet connectionPacket;
 	connectionPacket << (uint8_t)CommandToClient::ConnectRequestResult << (uint8_t)1
-		>> slot;
+		<< slot;
 
 	//send connection request success packet to client, plus their slot id
 	sendPacket(connectionPacket, clients_[slot]);
 	log("New Client connected from", clients_[slot].address, clients_[slot].port);
 
-	//setup paddle position for new client
+	////setup paddle position for new client
+	ObjectState pstate;
+	pstate.velX = 0;
+	pstate.velY = 10;
 
+	if (slot == 0) {
+		//left paddle
+		pstate.posX = 25;
+		pstate.posY = SCREEN_HEIGHT / 2;
+	}
+	else{
+		pstate.posX = SCREEN_WIDTH - 25;
+		pstate.posY = SCREEN_HEIGHT / 2;
+	}
+
+	paddleStates_[slot] = pstate;
 	connects_[slot] = true;
-
 }
 
 void Server::handleDisconnection(sf::IpAddress& address, uint16_t port)
@@ -155,5 +177,4 @@ int Server::emptySlot()
 		if (!connects_[i])
 			return i;
 	}
-	return -1;
 }

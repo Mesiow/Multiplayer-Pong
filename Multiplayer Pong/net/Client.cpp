@@ -5,8 +5,8 @@ Client::Client(olc::PixelGameEngine *pge)
 {
 	this->pge_ = pge;
 
+	connects_.fill(false);
 	address_ = sf::IpAddress::LocalHost;
-	port_ = 5400;
 
 	remoteAddress_ = sf::IpAddress::LocalHost;
 	remotePort_ = 7777;
@@ -36,6 +36,11 @@ void Client::run()
 	receivePackets();
 
 	//render
+	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
+		if (connects_[i]) {
+			peers_[i].render(pge_);
+		}
+	}
 	ball_.render(pge_);
 }
 
@@ -44,7 +49,7 @@ void Client::receivePackets()
 	sf::Packet packet;
 	sf::IpAddress sender;
 	uint16_t port;
-	if(socket_.receive(packet, sender, port) == sf::Socket::Done){
+	while(socket_.receive(packet, sender, port) == sf::Socket::Done){
 		std::cout << "Packet of size " << packet.getDataSize() << " received from "
 			<< sender << " on port " << port << std::endl;
 
@@ -69,7 +74,15 @@ void Client::handlePacketReceive(sf::Packet& packet)
 		}break;
 
 		case CommandToClient::PaddleState: {
-
+			uint8_t id;
+			float posx, posy;
+			
+			while (packet >> id) {
+				packet >> posx >> posy;
+				connects_[id] = true;
+				peers_[id].setPosition(posx, posy);
+			}
+			
 		}break;
 	}
 }
@@ -95,9 +108,13 @@ void Client::connectToServer()
 		//if result is 1(true), connection allowed
 		if (result) {
 			connected_ = true;
+			packet >> clientID;
+
+			int slot = clientID;
 
 			//setup peer objects/sprites
 			std::cout << "Connection request accepted\n";
+			connects_[slot] = true;
 
 			socket_.setBlocking(false);
 		}

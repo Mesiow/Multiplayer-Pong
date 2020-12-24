@@ -1,6 +1,7 @@
 #pragma once
 #include "Net.h"
 #include "PacketTypes.h"
+#include "../Paddle.h"
 #include "../Ball.h"
 
 class Client : Net{
@@ -18,7 +19,11 @@ private:
 	void disconnectFromServer();
 
 private:
+	int clientID = 0;
 	bool connected_ = false;
+
+	std::array<Paddle, MAX_CONNECTIONS> peers_;
+	std::array<bool, MAX_CONNECTIONS> connects_;
 	Ball ball_;
 
 

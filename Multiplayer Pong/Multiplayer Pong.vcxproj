@@ -157,6 +157,7 @@
     <ClCompile Include="net\PacketTypes.cpp" />
     <ClCompile Include="net\Server.cpp" />
     <ClCompile Include="olcPixelGameEngine.cpp" />
+    <ClCompile Include="Paddle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="net\Client.h" />
     <ClInclude Include="net\Net.h" />
     <ClInclude Include="net\PacketTypes.h" />
+    <ClInclude Include="Paddle.h" />
     <ClInclude Include="Pong.h" />
     <ClInclude Include="net\Server.h" />
     <ClInclude Include="olcPixelGameEngine.h" />

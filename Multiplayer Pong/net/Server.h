@@ -11,7 +11,7 @@ struct ClientEndPoint {
 	uint16_t port;
 };
 
-struct BallState {
+struct ObjectState {
 	float velX, velY;
 	float posX, posY;
 };
@@ -38,7 +38,8 @@ private:
 private:
 	std::array<ClientEndPoint, MAX_CONNECTIONS> clients_;
 	std::array<bool, MAX_CONNECTIONS> connects_;
+	std::array<ObjectState, MAX_CONNECTIONS> paddleStates_;
 	bool running_ = false;
 
-	BallState bstate_;
+	ObjectState bstate_;
 };
