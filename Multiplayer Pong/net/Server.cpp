@@ -24,9 +24,10 @@ void Server::run()
 	std::cout << "Server Running\n";
 	running_ = true;
 	while (running_) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 		receivePackets();
-		//updateState();
-		//sendState();
+		updateState();
+		sendState();
 	}
 }
 
@@ -68,6 +69,8 @@ void Server::receivePackets()
 
 void Server::updateState()
 {
+	//update paddles
+
 
 
 	//update ball
@@ -87,6 +90,17 @@ void Server::updateState()
 void Server::sendState()
 {
 
+	//Send ball data to clients
+	sf::Packet ballPacket;
+	ballPacket << (uint8_t)CommandToClient::BallState << bstate_.posX << bstate_.posY;
+
+	for (int i = 0; i < MAX_CONNECTIONS; i++) {
+		if (connects_[i]) {
+			ballPacket << (uint8_t)i; //client slot
+			auto clientEndPoint = clients_[i];
+			sendPacket(ballPacket, clientEndPoint);
+		}
+	}
 }
 
 void Server::sendPacket(sf::Packet& packet, ClientEndPoint client)

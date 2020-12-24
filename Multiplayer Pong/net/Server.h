@@ -3,6 +3,8 @@
 #include "PacketTypes.h"
 #include "../Pong.h"
 #include <array>
+#include <thread>
+#include <chrono>
 
 struct ClientEndPoint {
 	sf::IpAddress address;

@@ -5,7 +5,7 @@
 
 class Client : Net{
 public:
-	Client();
+	Client(olc::PixelGameEngine *pge);
 	~Client();
 	void run();
 
@@ -25,4 +25,6 @@ private:
 	//Server info
 	sf::IpAddress remoteAddress_;
 	uint16_t remotePort_;
+
+	olc::PixelGameEngine* pge_; //reference to engine
 };

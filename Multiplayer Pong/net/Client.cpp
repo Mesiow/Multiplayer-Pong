@@ -1,8 +1,10 @@
 #include "Client.h"
 #include <iostream>
 
-Client::Client()
+Client::Client(olc::PixelGameEngine *pge)
 {
+	this->pge_ = pge;
+
 	address_ = sf::IpAddress::LocalHost;
 	port_ = 5400;
 
@@ -25,14 +27,16 @@ Client::~Client()
 
 void Client::run()
 {
-	while (true) {
-		//handle input
+	if (!connected_)
+		return;
 
-		//receive packets
-		receivePackets();
+	//handle input
 
-		//render
-	}
+	//receive packets
+	receivePackets();
+
+	//render
+	ball_.render(pge_);
 }
 
 void Client::receivePackets()
@@ -59,7 +63,9 @@ void Client::handlePacketReceive(sf::Packet& packet)
 	packet >> command;
 	switch (command) {
 		case CommandToClient::BallState: {
-
+			float posx, posy;
+			packet >> posx >> posy;
+			ball_.setPosition(posx, posy);
 		}break;
 
 		case CommandToClient::PaddleState: {
@@ -89,6 +95,7 @@ void Client::connectToServer()
 		//if result is 1(true), connection allowed
 		if (result) {
 			connected_ = true;
+
 			//setup peer objects/sprites
 			std::cout << "Connection request accepted\n";
 
