@@ -14,7 +14,7 @@ public:
 public:
 	bool OnUserCreate() override
 	{
-		client_ = new Client();
+		client_ = new Client(this);
 		return true;
 	}
 
@@ -25,7 +25,9 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		
+		Clear(olc::BLACK);
+		client_->run();
+
 		return true;
 	}
 
