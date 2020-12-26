@@ -31,6 +31,18 @@ void Client::run()
 		return;
 
 	//handle input
+	uint8_t input = 0;
+	if (pge_->GetKey(olc::Key::W).bHeld) {
+		input |= Input::Up;
+	}
+	if (pge_->GetKey(olc::Key::S).bHeld) {
+		input |= Input::Down;
+	}
+
+	//send input
+	sf::Packet inputPacket;
+	inputPacket << (uint8_t)CommandToServer::ClientInput << clientID << input; //send input, with client id
+	sendPacket(inputPacket);
 
 	//receive packets
 	receivePackets();
@@ -50,9 +62,6 @@ void Client::receivePackets()
 	sf::IpAddress sender;
 	uint16_t port;
 	while(socket_.receive(packet, sender, port) == sf::Socket::Done){
-		std::cout << "Packet of size " << packet.getDataSize() << " received from "
-			<< sender << " on port " << port << std::endl;
-
 		handlePacketReceive(packet);
 	}
 }
@@ -100,23 +109,23 @@ void Client::connectToServer()
 	sf::IpAddress address;
 	uint16_t port;
 
-	if (socket_.receive(recv_packet, address, port) == sf::Socket::Done) {
+	
+	if(socket_.receive(recv_packet, address, port) == sf::Socket::Done) {
 		CommandToClient command;
 		uint8_t result;
-		recv_packet >> command >> result;
 
-		//if result is 1(true), connection allowed
-		if (result) {
-			connected_ = true;
-			packet >> clientID;
+		if (recv_packet >> command >> result >> clientID) {
+			if (result) {
+				connected_ = true;
 
-			int slot = clientID;
+				std::cout << "Client ID: " << (int)clientID << std::endl;
 
-			//setup peer objects/sprites
-			std::cout << "Connection request accepted\n";
-			connects_[slot] = true;
+				//setup peer objects/sprites
+				std::cout << "Connection request accepted\n";
+				connects_[clientID] = true;
 
-			socket_.setBlocking(false);
+				socket_.setBlocking(false);
+			}
 		}
 	}
 }

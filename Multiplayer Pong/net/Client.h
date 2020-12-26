@@ -19,7 +19,7 @@ private:
 	void disconnectFromServer();
 
 private:
-	int clientID = 0;
+	sf::Uint8 clientID;
 	bool connected_ = false;
 
 	std::array<Paddle, MAX_CONNECTIONS> peers_;
