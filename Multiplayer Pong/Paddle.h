@@ -10,4 +10,5 @@ public:
 
 	int width, height;
 	float posx, posy;
+	olc::Pixel color;
 };
