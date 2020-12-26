@@ -5,6 +5,8 @@
 enum class CommandToServer : uint8_t {
 	Connect = 0,
 	Disconnect = 1,
+
+	ClientInput
 };
 
 enum class CommandToClient : uint8_t {
@@ -12,6 +14,11 @@ enum class CommandToClient : uint8_t {
 	BallState = 1,
 
 	ConnectRequestResult
+};
+
+enum Input : uint8_t{
+	Up = 0x1,
+	Down = 0x2
 };
 
 sf::Packet& operator<<(sf::Packet& packet, CommandToServer &command);
