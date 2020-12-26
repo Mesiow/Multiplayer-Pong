@@ -11,7 +11,7 @@ Server::Server()
 	//Ball State
 	bstate_.posX = SCREEN_WIDTH / 2;
 	bstate_.posY = SCREEN_HEIGHT / 2;
-	bstate_.velX = 50;
+	bstate_.velX = 60;
 	bstate_.velY = 25;
 }
 
@@ -63,6 +63,10 @@ void Server::receivePackets()
 			case CommandToServer::Disconnect: {
 				handleDisconnection(address, port);
 			}break;
+
+			case CommandToServer::ClientInput: {
+				handleClientInput(packet);
+			}break;
 		}
 	}
 }
@@ -71,11 +75,61 @@ void Server::updateState()
 {
 	//update paddles
 
+	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
+		if (connects_[i]) {
+			auto& input = clientInputs_[i];
+			auto& paddle = paddleStates_[i];
 
+			const float delta = 20.0f;
+			if (input.up) {
+				paddle.velY -= delta;
+			}
+			if (input.down) {
+				paddle.velY += delta;
+			}
+			
+			paddle.velY *= 0.9f;
+			if (std::abs(paddle.velY) < 0.05f) {
+				paddle.velY = 0.0f;
+			}
+			if (std::abs(paddle.velY) < 0.05f) {
+				paddle.velY = 0.0f;
+			}
+
+			paddle.posY += paddle.velY * (1.0f / 60.0f);
+
+			if (paddle.posY > SCREEN_HEIGHT) {
+				paddle.posY = SCREEN_HEIGHT - 1;
+				paddle.velY = 0;
+			}
+			else if (paddle.posY < 0) {
+				paddle.posY = 1;
+				paddle.velY = 0;
+			}
+
+		}
+	}
 
 	//update ball
 	bstate_.posX += bstate_.velX * (1.0f / 60.0f);
 	bstate_.posY += bstate_.velY * (1.0f / 60.0f);
+
+	//Paddle collision against ball
+	const auto& leftPlayer = paddleStates_[0];
+	const auto& rightPlayer = paddleStates_[1];
+
+	//left paddle collision
+	if (bstate_.posX <= leftPlayer.posX + PADDLE_WIDTH &&
+		(bstate_.posY >= leftPlayer.posY && bstate_.posY <= leftPlayer.posY + PADDLE_HEIGHT)) {
+		bstate_.velX *= -1;
+	}
+
+	//right paddle collision
+	if (bstate_.posX + BALL_SIZE >= rightPlayer.posX &&
+		bstate_.posY >= rightPlayer.posY && 
+		bstate_.posY + BALL_SIZE <= rightPlayer.posY + PADDLE_HEIGHT) {
+		bstate_.velX *= -1;
+	}
 
 	//ball border collision
 	if (bstate_.posX + BALL_SIZE > SCREEN_WIDTH || bstate_.posX <= 0) {
@@ -110,12 +164,11 @@ void Server::sendState()
 			auto &clientEndPoint = clients_[i];
 			sendPacket(paddlePacket, clientEndPoint);
 			sendPacket(ballPacket, clientEndPoint);
-			
 		}
 	}
 }
 
-void Server::sendPacket(sf::Packet& packet, ClientEndPoint client)
+void Server::sendPacket(sf::Packet& packet, ClientEndPoint &client)
 {
 	socket_.send(packet, client.address, client.port);
 }
@@ -127,7 +180,7 @@ void Server::handleConnection(sf::IpAddress& address, uint16_t port)
 	newClient.address = address;
 	newClient.port = port;
 
-	int slot = emptySlot();
+	sf::Uint8 slot = emptySlot();
 	
 	std::cout << "slot: " << (int)slot << "\n";
 	clients_[slot] = newClient;
@@ -171,10 +224,23 @@ void Server::handleDisconnection(sf::IpAddress& address, uint16_t port)
 	}
 }
 
+void Server::handleClientInput(sf::Packet& packet)
+{
+	uint8_t input;
+	uint8_t clientID;
+	packet >> clientID >> input;
+	
+	auto& clientInput = clientInputs_[clientID];
+	clientInput.up = input & Input::Up;
+	clientInput.down = input & Input::Down;
+}
+
 int Server::emptySlot()
 {
 	for (int i = 0; i < MAX_CONNECTIONS; i++) {
-		if (!connects_[i])
+		if (!connects_[i]) {
 			return i;
+		}
 	}
+	return -1;
 }
