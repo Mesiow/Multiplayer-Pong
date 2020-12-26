@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "Server.h"
 #include <iostream>
 
 Client::Client(olc::PixelGameEngine *pge)
@@ -6,9 +7,9 @@ Client::Client(olc::PixelGameEngine *pge)
 	this->pge_ = pge;
 
 	connects_.fill(false);
-	address_ = sf::IpAddress::LocalHost;
+	address_ = sf::IpAddress::getLocalAddress();
 
-	remoteAddress_ = sf::IpAddress::LocalHost;
+	remoteAddress_ = Server::getLocalAddress();
 	remotePort_ = 7777;
 	if (socket_.bind(sf::Socket::AnyPort, address_) != sf::Socket::Done) {
 		log_error("Client socket failed to create");

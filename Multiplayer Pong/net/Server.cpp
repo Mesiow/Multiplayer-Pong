@@ -1,11 +1,11 @@
 #include "Server.h"
 #include <iostream>
 
+sf::IpAddress Server::address = sf::IpAddress::getLocalAddress();
+
 Server::Server()
 {
 	socket_.setBlocking(false);
-	address_ = sf::IpAddress("127.0.0.1");
-	port_ = 0;
 	connects_.fill(false);
 
 	//Ball State
@@ -35,7 +35,7 @@ void Server::create(uint16_t port)
 {
 	this->port_ = port;
 	//bind socket to local host
-	if (socket_.bind(port, address_) != sf::Socket::Done) {
+	if (socket_.bind(port, address) != sf::Socket::Done) {
 		std::cerr << "Error occured binding server UDP Socket\n";
 		return;
 	}
@@ -43,6 +43,11 @@ void Server::create(uint16_t port)
 		std::cout << "Server setup successfully\n";
 
 	}
+}
+
+sf::IpAddress Server::getLocalAddress()
+{
+	return address;
 }
 
 void Server::receivePackets()

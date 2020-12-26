@@ -28,6 +28,8 @@ public:
 	void run();
 	void create(uint16_t port);
 
+	static sf::IpAddress getLocalAddress();
+
 private:
 	void receivePackets()override;
 	void updateState();
@@ -49,4 +51,6 @@ private:
 	bool running_ = false;
 
 	ObjectState bstate_;
+
+	static sf::IpAddress address;
 };
