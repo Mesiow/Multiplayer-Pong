@@ -6,5 +6,5 @@ and the SFML Network module https://www.sfml-dev.org/documentation/2.5.1/group__
 # Setup
 run "git clone https://github.com/Mesiow/Multiplayer-Pong.git" in your terminal
 
-![](multipong.gif)
+![](mpong.gif)
 
