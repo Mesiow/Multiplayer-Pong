@@ -121,6 +121,13 @@ void Client::handlePacketReceive(sf::Packet& packet)
 			}
 			
 		}break;
+
+		case CommandToClient::PlayerScored: {
+			Player player;
+			uint8_t point;
+			packet >> player >> point;
+			sboard_.addToScore(player, point);
+		}break;
 	}
 }
 
