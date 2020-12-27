@@ -1,4 +1,5 @@
 #include "PacketTypes.h"
+#include "../Scoreboard.h"
 
 sf::Packet& operator<<(sf::Packet& packet, CommandToServer &command)
 {
@@ -25,5 +26,13 @@ sf::Packet& operator>>(sf::Packet& packet, CommandToClient& command)
     uint8_t commandId;
     packet >> commandId;
     command = (CommandToClient)commandId;
+    return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, Player& player)
+{
+    int playerId;
+    packet >> playerId;
+    player = (Player)playerId;
     return packet;
 }

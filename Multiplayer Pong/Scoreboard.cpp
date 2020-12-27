@@ -1,4 +1,5 @@
 #include "Scoreboard.h"
+#include "net/PacketTypes.h"
 
 Scoreboard::Scoreboard()
 {
@@ -8,8 +9,8 @@ Scoreboard::Scoreboard()
 void Scoreboard::render(olc::PixelGameEngine* pge)
 {
 	int offset = 50;
-	pge->DrawStringDecal(olc::vf2d(SCREEN_WIDTH / 2 - offset, 15), std::to_string(scores[(int)Player::One]));
-	pge->DrawStringDecal(olc::vf2d(SCREEN_WIDTH / 2 + offset, 15), std::to_string(scores[(int)Player::Two]));
+	pge->DrawStringDecal(olc::vf2d(SCREEN_WIDTH / 2 - offset, 10), std::to_string(scores[(int)Player::One]));
+	pge->DrawStringDecal(olc::vf2d(SCREEN_WIDTH / 2 + offset, 10), std::to_string(scores[(int)Player::Two]));
 }
 
 void Scoreboard::addToScore(Player player, int point)
