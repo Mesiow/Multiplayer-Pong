@@ -13,6 +13,7 @@ public:
 private:
 	void receivePackets()override;
 	void sendPacket(sf::Packet& packet)override;
+	void sendBroadcast(); //sends broadcast to all lan computers to obtain the server's ip address
 
 	void handlePacketReceive(sf::Packet& packet);
 	void connectToServer();

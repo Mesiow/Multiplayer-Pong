@@ -15,7 +15,6 @@ public:
 	bool OnUserCreate() override
 	{
 		client_ = new Client(this);
-	
 		return true;
 	}
 

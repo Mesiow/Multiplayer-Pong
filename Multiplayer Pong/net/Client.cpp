@@ -9,14 +9,14 @@ Client::Client(olc::PixelGameEngine *pge)
 	connects_.fill(false);
 	address_ = sf::IpAddress::getLocalAddress();
 
-	remoteAddress_ = Server::getLocalAddress();
-	remotePort_ = 7777;
+	remotePort_ = Server::getPort();
+	//Bind udp socket
 	if (socket_.bind(sf::Socket::AnyPort, address_) != sf::Socket::Done) {
 		log_error("Client socket failed to create");
 		return;
 	}
 	else {
-		clog("Client setup successfully");
+		sendBroadcast();
 		connectToServer();
 	}
 }
@@ -70,6 +70,32 @@ void Client::receivePackets()
 void Client::sendPacket(sf::Packet& packet)
 {
 	socket_.send(packet, remoteAddress_, remotePort_);
+}
+
+void Client::sendBroadcast()
+{
+	//Broadcast data to get the server ip
+	sf::Packet broadcastPacket;
+	broadcastPacket << (uint8_t)CommandToServer::Broadcast;
+
+	if (socket_.send(broadcastPacket, sf::IpAddress::Broadcast, remotePort_) == sf::Socket::Done) {
+		sf::Packet recv_packet;
+		sf::IpAddress serverAddress;
+		uint16_t port;
+		if (socket_.receive(recv_packet, serverAddress, port) == sf::Socket::Done) {
+			CommandToClient command;
+			uint8_t result;
+			recv_packet >> command >> result;
+
+			if (command == CommandToClient::BroadcastRequestResult) {
+				if (result) {
+					//Save server information
+					remoteAddress_ = serverAddress;
+					remotePort_ = port;
+				}
+			}
+		}
+	}
 }
 
 void Client::handlePacketReceive(sf::Packet& packet)
