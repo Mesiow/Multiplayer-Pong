@@ -28,7 +28,7 @@ public:
 	void run();
 	void create(uint16_t port);
 
-	static sf::IpAddress getLocalAddress();
+	static uint16_t getPort();
 
 private:
 	void receivePackets()override;
@@ -38,6 +38,7 @@ private:
 	void sendPacket(sf::Packet& packet, ClientEndPoint &client);
 	void handleConnection(sf::IpAddress &address, uint16_t port);
 	void handleDisconnection(sf::IpAddress& address, uint16_t port);
+	void handleBroadcast(sf::IpAddress &address, uint16_t port);
 	void handleClientInput(sf::Packet& packet);
 
 	int emptySlot();
@@ -52,5 +53,5 @@ private:
 
 	ObjectState bstate_;
 
-	static sf::IpAddress address;
+	static uint16_t port;
 };

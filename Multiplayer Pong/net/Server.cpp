@@ -1,7 +1,7 @@
 #include "Server.h"
 #include <iostream>
 
-sf::IpAddress Server::address = sf::IpAddress::getLocalAddress();
+uint16_t Server::port = 7777;
 
 Server::Server()
 {
@@ -11,7 +11,7 @@ Server::Server()
 	//Ball State
 	bstate_.posX = SCREEN_WIDTH / 2;
 	bstate_.posY = SCREEN_HEIGHT / 2;
-	bstate_.velX = 60;
+	bstate_.velX = 60 * 2.5;
 	bstate_.velY = 25;
 }
 
@@ -33,9 +33,10 @@ void Server::run()
 
 void Server::create(uint16_t port)
 {
+	address_ = sf::IpAddress::getLocalAddress();
 	this->port_ = port;
 	//bind socket to local host
-	if (socket_.bind(port, address) != sf::Socket::Done) {
+	if (socket_.bind(port, address_) != sf::Socket::Done) {
 		std::cerr << "Error occured binding server UDP Socket\n";
 		return;
 	}
@@ -45,9 +46,9 @@ void Server::create(uint16_t port)
 	}
 }
 
-sf::IpAddress Server::getLocalAddress()
+uint16_t Server::getPort()
 {
-	return address;
+	return port;
 }
 
 void Server::receivePackets()
@@ -67,6 +68,10 @@ void Server::receivePackets()
 
 			case CommandToServer::Disconnect: {
 				handleDisconnection(address, port);
+			}break;
+
+			case CommandToServer::Broadcast: {
+				handleBroadcast(address, port);
 			}break;
 
 			case CommandToServer::ClientInput: {
@@ -227,6 +232,14 @@ void Server::handleDisconnection(sf::IpAddress& address, uint16_t port)
 			std::cout << "Client " << address.toString() << ": " << port << " disconnected\n";
 		}
 	}
+}
+
+void Server::handleBroadcast(sf::IpAddress &address, uint16_t port)
+{
+	log("Broadcast from client ", address, port);
+	sf::Packet serverip;
+	serverip << (uint8_t)CommandToClient::BroadcastRequestResult << (uint8_t)1;
+	socket_.send(serverip, address, port);
 }
 
 void Server::handleClientInput(sf::Packet& packet)
