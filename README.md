@@ -1,3 +1,6 @@
+# Multiplayer Pong
+LAN two player pong
+
 # Dependencies
 Built using the olcPixelGameEngine by Javidx9 https://github.com/OneLoneCoder/olcPixelGameEngine  
 
