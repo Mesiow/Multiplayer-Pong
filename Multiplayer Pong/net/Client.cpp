@@ -152,13 +152,7 @@ void Client::connectToServer()
 		if (recv_packet >> command >> result >> clientID) {
 			if (result) {
 				connected_ = true;
-
-				std::cout << "Client ID: " << (int)clientID << std::endl;
-
-				//setup peer objects/sprites
-				std::cout << "Connection request accepted\n";
 				connects_[clientID] = true;
-
 				socket_.setBlocking(false);
 			}
 		}

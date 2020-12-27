@@ -11,7 +11,7 @@ Server::Server()
 	//Ball State
 	bstate_.posX = SCREEN_WIDTH / 2;
 	bstate_.posY = SCREEN_HEIGHT / 2;
-	bstate_.velX = 60 * 2.5;
+	bstate_.velX = 60;
 	bstate_.velY = 25;
 
 	sstate_.playerScored = false;
@@ -121,9 +121,11 @@ void Server::updateState()
 		}
 	}
 
-	//update ball
-	bstate_.posX += bstate_.velX * (1.0f / 60.0f);
-	bstate_.posY += bstate_.velY * (1.0f / 60.0f);
+	//update ball only when both clients are in the game
+	if (connectedClients() >= 2) {
+		bstate_.posX += bstate_.velX * (1.0f / 60.0f);
+		bstate_.posY += bstate_.velY * (1.0f / 60.0f);
+	}
 
 	//Paddle collision against ball
 	const auto& leftPlayer = paddleStates_[0];
@@ -184,25 +186,26 @@ void Server::sendState()
 	sf::Packet ballPacket;
 	ballPacket << (uint8_t)CommandToClient::BallState << bstate_.posX << bstate_.posY;
 
-	//Score data
-	sf::Packet scorePacket;
-	if (sstate_.playerScored) {
-		//send command, and which player scored and number of points to reward player with
-		scorePacket << (uint8_t)CommandToClient::PlayerScored << (int)sstate_.player <<(uint8_t)1; 
-	}
-
 	for (int i = 0; i < MAX_CONNECTIONS; i++) {
 		if (connects_[i]) {
 			auto &clientEndPoint = clients_[i];
 			sendPacket(paddlePacket, clientEndPoint);
 			sendPacket(ballPacket, clientEndPoint);
-			if (sstate_.playerScored) {
-				if (scorePacket.getDataSize() > 0) {
-					sendPacket(scorePacket, clientEndPoint);
-					sstate_.playerScored = false;
-				}
+		}
+	}
+
+	//Score data
+	if (sstate_.playerScored) {
+		sf::Packet scorePacket;
+		//send command, and which player scored and number of points to reward player with
+		scorePacket << (uint8_t)CommandToClient::PlayerScored << (int)sstate_.player << (uint8_t)1;
+		for (int i = 0; i < MAX_CONNECTIONS; i++) {
+			auto& clientEndPoint = clients_[i];	
+			if (scorePacket.getDataSize() > 0) {
+				sendPacket(scorePacket, clientEndPoint);
 			}
 		}
+		sstate_.playerScored = false;
 	}
 }
 
@@ -279,6 +282,16 @@ void Server::handleClientInput(sf::Packet& packet)
 	auto& clientInput = clientInputs_[clientID];
 	clientInput.up = input & Input::Up;
 	clientInput.down = input & Input::Down;
+}
+
+int Server::connectedClients()
+{
+	int connected = 0;
+	for (int i = 0; i < MAX_CONNECTIONS; i++) {
+		if (connects_[i])
+			connected++;
+	}
+	return connected;
 }
 
 int Server::emptySlot()

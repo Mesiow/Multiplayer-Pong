@@ -48,6 +48,7 @@ private:
 	void handleBroadcast(sf::IpAddress &address, uint16_t port);
 	void handleClientInput(sf::Packet& packet);
 
+	int connectedClients(); //returns current number of connected clients
 	int emptySlot();
 
 
