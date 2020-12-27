@@ -48,12 +48,13 @@ void Client::run()
 	//receive packets
 	receivePackets();
 
-	//render
+	//render game objects
 	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
 		if (connects_[i]) {
 			peers_[i].render(pge_);
 		}
 	}
+	sboard_.render(pge_);
 	ball_.render(pge_);
 }
 

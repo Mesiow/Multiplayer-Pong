@@ -1,6 +1,7 @@
 #pragma once
 #include "Net.h"
 #include "PacketTypes.h"
+#include "../Scoreboard.h"
 #include "../Paddle.h"
 #include "../Ball.h"
 
@@ -25,6 +26,8 @@ private:
 
 	std::array<Paddle, MAX_CONNECTIONS> peers_;
 	std::array<bool, MAX_CONNECTIONS> connects_;
+
+	Scoreboard sboard_;
 	Ball ball_;
 
 

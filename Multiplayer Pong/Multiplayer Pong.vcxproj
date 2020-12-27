@@ -158,6 +158,7 @@
     <ClCompile Include="net\Server.cpp" />
     <ClCompile Include="olcPixelGameEngine.cpp" />
     <ClCompile Include="Paddle.cpp" />
+    <ClCompile Include="Scoreboard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Pong.h" />
     <ClInclude Include="net\Server.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
+    <ClInclude Include="Scoreboard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
