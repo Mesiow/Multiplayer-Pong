@@ -13,6 +13,8 @@ Server::Server()
 	bstate_.posY = SCREEN_HEIGHT / 2;
 	bstate_.velX = 60 * 2.5;
 	bstate_.velY = 25;
+
+	sstate_.playerScored = false;
 }
 
 Server::~Server()
@@ -84,7 +86,6 @@ void Server::receivePackets()
 void Server::updateState()
 {
 	//update paddles
-
 	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
 		if (connects_[i]) {
 			auto& input = clientInputs_[i];
@@ -142,10 +143,23 @@ void Server::updateState()
 	}
 
 	//ball border collision
+	if (bstate_.posX + BALL_SIZE > SCREEN_WIDTH) { //ball hit right border, player 1 scores
+		sstate_.player = Player::One;
+		sstate_.playerScored = true;
+	}
+
+	if (bstate_.posX <= 0) { //ball hit left border, player 2 scores
+		sstate_.player = Player::Two;
+		sstate_.playerScored = true;
+	}
+
+	//X axis bounce
 	if (bstate_.posX + BALL_SIZE > SCREEN_WIDTH || bstate_.posX <= 0) {
 		bstate_.velX *= -1;
 	}
 
+
+	//Y axis bounce
 	if (bstate_.posY + BALL_SIZE > SCREEN_HEIGHT || bstate_.posY <= 0) {
 		bstate_.velY *= -1;
 	}
@@ -165,15 +179,29 @@ void Server::sendState()
 	}
 
 
+
 	//Send ball data to clients
 	sf::Packet ballPacket;
 	ballPacket << (uint8_t)CommandToClient::BallState << bstate_.posX << bstate_.posY;
+
+	//Score data
+	sf::Packet scorePacket;
+	if (sstate_.playerScored) {
+		//send command, and which player scored and number of points to reward player with
+		scorePacket << (uint8_t)CommandToClient::PlayerScored << (int)sstate_.player <<(uint8_t)1; 
+	}
 
 	for (int i = 0; i < MAX_CONNECTIONS; i++) {
 		if (connects_[i]) {
 			auto &clientEndPoint = clients_[i];
 			sendPacket(paddlePacket, clientEndPoint);
 			sendPacket(ballPacket, clientEndPoint);
+			if (sstate_.playerScored) {
+				if (scorePacket.getDataSize() > 0) {
+					sendPacket(scorePacket, clientEndPoint);
+					sstate_.playerScored = false;
+				}
+			}
 		}
 	}
 }

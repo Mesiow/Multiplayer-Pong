@@ -6,6 +6,8 @@
 #include <thread>
 #include <chrono>
 
+enum class Player;
+
 struct ClientInput {
 	int up;
 	int down;
@@ -19,6 +21,11 @@ struct ClientEndPoint {
 struct ObjectState {
 	float velX, velY;
 	float posX, posY;
+};
+
+struct ScoreState {
+	Player player;
+	bool playerScored;
 };
 
 class Server : Net{
@@ -52,6 +59,7 @@ private:
 	bool running_ = false;
 
 	ObjectState bstate_;
+	ScoreState sstate_;
 
 	static uint16_t port;
 };
