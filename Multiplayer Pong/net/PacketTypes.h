@@ -5,6 +5,7 @@
 enum class CommandToServer : uint8_t {
 	Connect = 0,
 	Disconnect = 1,
+	Broadcast = 2,
 
 	ClientInput
 };
@@ -13,7 +14,8 @@ enum class CommandToClient : uint8_t {
 	PaddleState = 0,
 	BallState = 1,
 
-	ConnectRequestResult
+	ConnectRequestResult,
+	BroadcastRequestResult
 };
 
 enum Input : uint8_t{
