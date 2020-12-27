@@ -11,7 +11,7 @@ Server::Server()
 	//Ball State
 	bstate_.posX = SCREEN_WIDTH / 2;
 	bstate_.posY = SCREEN_HEIGHT / 2;
-	bstate_.velX = 60;
+	bstate_.velX = 70;
 	bstate_.velY = 25;
 
 	sstate_.playerScored = false;
