@@ -21,6 +21,10 @@ struct ClientEndPoint {
 struct ObjectState {
 	float velX, velY;
 	float posX, posY;
+
+	void reset(float x, float y) { //reset object to a specific position
+		posX = x; posY = y;
+	}
 };
 
 struct ScoreState {

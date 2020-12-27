@@ -37,14 +37,12 @@ void Server::create(uint16_t port)
 {
 	address_ = sf::IpAddress::getLocalAddress();
 	this->port_ = port;
-	//bind socket to local host
 	if (socket_.bind(port, address_) != sf::Socket::Done) {
 		std::cerr << "Error occured binding server UDP Socket\n";
 		return;
 	}
 	else {
 		std::cout << "Server setup successfully\n";
-
 	}
 }
 
@@ -148,11 +146,17 @@ void Server::updateState()
 	if (bstate_.posX + BALL_SIZE > SCREEN_WIDTH) { //ball hit right border, player 1 scores
 		sstate_.player = Player::One;
 		sstate_.playerScored = true;
+
+		bstate_.reset(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //reset ball to middle, 
+		bstate_.velX = -bstate_.velX; //player 1 scored have player 2 serve
 	}
 
 	if (bstate_.posX <= 0) { //ball hit left border, player 2 scores
 		sstate_.player = Player::Two;
 		sstate_.playerScored = true;
+
+		bstate_.reset(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+		bstate_.velX = -bstate_.velX;
 	}
 
 	//X axis bounce
@@ -180,8 +184,6 @@ void Server::sendState()
 		}
 	}
 
-
-
 	//Send ball data to clients
 	sf::Packet ballPacket;
 	ballPacket << (uint8_t)CommandToClient::BallState << bstate_.posX << bstate_.posY;
@@ -194,7 +196,7 @@ void Server::sendState()
 		}
 	}
 
-	//Score data
+	//Send Score data
 	if (sstate_.playerScored) {
 		sf::Packet scorePacket;
 		//send command, and which player scored and number of points to reward player with
